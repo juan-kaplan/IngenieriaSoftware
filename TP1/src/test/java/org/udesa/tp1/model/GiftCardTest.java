@@ -29,7 +29,7 @@ public class GiftCardTest {
 
     @Test
     public void test04GiftCardThrowsErrorIfNotEnoughMoney(){
-        assertThrowsLike( () -> newGiftCardWith100().spend(150), GiftCard.NotEnoughBalanceErrorDescription );
+        assertThrowsLike( () -> newGiftCardWith100().spend(150), GiftCard.NotEnoughBalanceError);
     }
 
     private void assertThrowsLike(Executable executable, String message ) {
