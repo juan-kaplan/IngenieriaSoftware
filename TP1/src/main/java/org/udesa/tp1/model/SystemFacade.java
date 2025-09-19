@@ -1,7 +1,6 @@
 package org.udesa.tp1.model;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class SystemFacade {
     public static String InvalidLoginCredentialsError = "Invalid Login Credentials";
@@ -31,7 +30,14 @@ public class SystemFacade {
     }
 
     public boolean isTokenValid(Integer token) {
-        return activeSessions.containsKey(token) || activeSessions.get(token).isActive();
+        if (!activeSessions.containsKey(token))
+            return false;
+
+        if (activeSessions.get(token).isActive())
+            return true;
+
+        activeSessions.remove(token);
+        return false;
     }
 
     public SystemFacade claimGiftCard(Integer token, Integer giftCardId) {
