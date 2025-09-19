@@ -8,12 +8,12 @@ public class SystemFacade {
 
     private Map<String, String> validUsers;
     private List<GiftCard> validGiftCards;
-    private List<Integer> tokens;
+    private Map<Integer, UserSession> activeSessions;
 
     public SystemFacade(Map<String, String> validUsers, List<GiftCard> validGiftCards) {
         this.validUsers = validUsers;
         this.validGiftCards = validGiftCards;
-        this.tokens = new ArrayList<>();
+        this.activeSessions = new HashMap<>();
     }
 
     public Integer login(String user, String password) {
@@ -21,11 +21,11 @@ public class SystemFacade {
             throw new RuntimeException(InvalidLoginCredentialsError);
 
         Integer token = ThreadLocalRandom.current().nextInt();
-        tokens.add(token);
+        activeSessions.put(token, new UserSession(user));
         return token;
     }
 
     public boolean isTokenValid(Integer token) {
-        return tokens.contains(token);
+        return activeSessions.containsKey(token);
     }
 }
