@@ -8,6 +8,7 @@ public class UserSession {
     private Clock clock;
     private String user;
 
+
     public UserSession(String user, LocalDateTime lastAccessed, Clock clock) {
         this.user = user;
         this.lastAccessed = lastAccessed;
@@ -15,7 +16,7 @@ public class UserSession {
     }
 
     public UserSession claimGiftCard(GiftCard giftCard) {
-        giftCard.setOwner(user);
+        giftCard.claimCard(user);
         return this;
     }
 
