@@ -32,8 +32,8 @@ public class GiftCard{
         return balance;
     }
 
-    private GiftCard addTransaction(float amount, LocalDateTime timestamp, String description) {
-        expenses.add(new  Transaction(amount, timestamp, description));
+    private GiftCard addTransaction(float amount, LocalDateTime timestamp, String storeName) {
+        expenses.add(new  Transaction(amount, timestamp, storeName));
         return this;
     }
 
