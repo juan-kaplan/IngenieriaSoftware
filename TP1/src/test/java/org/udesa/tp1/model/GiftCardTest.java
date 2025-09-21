@@ -61,8 +61,7 @@ public class GiftCardTest {
     @Test
     public void test09TransactionCanBeAdded(){
         GiftCard giftCard = newClaimedGiftCardWith100();
-        Transaction transaction = new Transaction(50, "Store1", LocalDateTime.now(), "No description");
-        giftCard.addTransaction(transaction);
+        giftCard.addTransaction(50,  LocalDateTime.now(), "No description");
         assertEquals(transaction, giftCard.expenses().get(0));
     }
     private void assertThrowsLike(Executable executable, String message ) {

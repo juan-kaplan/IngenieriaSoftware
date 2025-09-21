@@ -68,14 +68,9 @@
             return activeSessions.get(token).checkBalance(validGiftCards.findById(giftCardId));
         }
 
-        public SystemFacade chargeUsersGiftCard(String merchantId, String giftCardId, String user, float amount){
+        public SystemFacade chargeUsersGiftCard(String merchantId, String giftCardId, String user, float amount, String payment_description){
             validateMerchantAndUserAndGiftCardInformation(merchantId, giftCardId, user);
-            GiftCard giftCard = validGiftCards.findById(giftCardId);
-            giftCard.spend(amount);
-            String date = clock.now().toLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-            String time = clock.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-            String description = String.format("User %s spent %s at merchant %s on %s at %s. Merchant Id: %s", user, amount, validMerchants().findById(merchantId).merchantName(), date, time, merchantId);
-            giftCard.addTransaction(new Transaction(amount, merchantId, clock.now(), description));
+            validGiftCards.findById(giftCardId).chargeGiftCard(user, amount, payment_description, clock.now());
 
             return this;
         }

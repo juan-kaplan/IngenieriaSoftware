@@ -1,13 +1,16 @@
 package org.udesa.tp1.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class GiftCard implements Identifiable {
     public static String NotEnoughBalanceError = "Gift Card has not enough balance";
     public static String GiftCardIsClaimedError = "Gift Card is claimed";
     public static String GiftCardIsNotClaimedError = "Operation invalid: Gift Card is not claimed";
+    public static String UserDoesNotOwnCardError = "The selected User doesn't own the Card";
 
 
     private final String giftCardId;
@@ -41,20 +44,10 @@ public class GiftCard implements Identifiable {
         return isClaimed;
     }
 
-    public GiftCard spend(float amount) {
+    public GiftCard addTransaction(float amount, LocalDateTime timestamp, String description) {
         if (!isClaimed())
             throw new RuntimeException(GiftCardIsNotClaimedError);
-        if (amount > balance)
-            throw new RuntimeException(NotEnoughBalanceError);
-
-        this.balance -= amount;
-        return this;
-    }
-
-    public GiftCard addTransaction(Transaction transaction) {
-        if (!isClaimed())
-            throw new RuntimeException(GiftCardIsNotClaimedError);
-        expenses.add(transaction);
+        expenses.add(new  Transaction(amount, timestamp, description));
         return this;
     }
 
@@ -71,5 +64,16 @@ public class GiftCard implements Identifiable {
         this.isClaimed = true;
         this.owner = owner;
         return this;
+    }
+
+    public GiftCard chargeGiftCard(String user, float amount, String paymentDescription, LocalDateTime now) {
+        if (Objects.equals(owner(), user))
+            throw new RuntimeException(UserDoesNotOwnCardError);
+        if (amount > balance)
+            throw new RuntimeException(NotEnoughBalanceError);
+
+        balance -= amount;
+        return addTransaction(amount, now, paymentDescription);
+
     }
 }
