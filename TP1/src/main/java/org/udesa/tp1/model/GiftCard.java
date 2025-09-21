@@ -1,11 +1,10 @@
 package org.udesa.tp1.model;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GiftCard {
+public class GiftCard implements Identifiable {
     public static String NotEnoughBalanceError = "Gift Card has not enough balance";
     public static String GiftCardIsClaimedError = "Gift Card is claimed";
     public static String GiftCardIsNotClaimedError = "Operation invalid: Gift Card is not claimed";
@@ -29,8 +28,8 @@ public class GiftCard {
         return Collections.unmodifiableList(expenses);
     }
 
-
-    public String giftCardId() {
+    @Override
+    public String id() {
         return giftCardId;
     }
 

@@ -111,10 +111,16 @@ public class SystemFacadeTest {
     private SystemFacade systemFacade() {
         giftCard1 = new GiftCard(100, giftCardId1);
         giftCard2 = new GiftCard(250, giftCardId2);
+        User user1 = new User("John", "Jpass");
+        User user2 = new User("Paul", "Ppass");
+        Merchant merchant1 = new Merchant("Restaurant1", "The Prancing Pony");
+        Merchant merchant2 = new Merchant("Store1", "Nike");
 
-        return new SystemFacade(Map.of( "John", "Jpass", "Paul", "Ppass" ), Map.of("Store1", "Nike Store", "Restaurant1", "The Prancing Pony"),
-                                new GiftCardRepository().saveCard(giftCard1).saveCard(giftCard2),
-                                new Clock());
+        return new SystemFacade(new Repository<User>().saveItem(user1).saveItem(user2),
+                                new Repository<Merchant>().saveItem(merchant1).saveItem(merchant2),
+                                new Repository<GiftCard>().saveItem(giftCard1).saveItem(giftCard2),
+                                new Clock()
+                                );
     }
 
     private void assertThrowsLike(Executable executable, String message ) {

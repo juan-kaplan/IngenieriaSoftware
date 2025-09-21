@@ -12,14 +12,14 @@
         public static String UserDoesNotOwnCardError = "The selected User doesn't own the Card";
 
 
-        private Map<String, String> validUsers; // username, password
-        private Map<String, String> validMerchants; //Id, name
-        private GiftCardRepository validGiftCards;
-        private Map<Integer, UserSession> activeSessions; // token, UserSession
+        private final Repository<User> validUsers; // username, password
+        private final Repository<Merchant> validMerchants; //Id, name
+        private final Repository<GiftCard> validGiftCards;
+        private final Map<Integer, UserSession> activeSessions; // token, UserSession
         private int tokenNum;
-        private Clock clock;
+        private final Clock clock;
 
-        public SystemFacade(Map<String, String> validUsers, Map<String, String> validMerchants, GiftCardRepository validGiftCards, Clock clock) {
+        public SystemFacade(Repository<User> validUsers, Repository<Merchant> validMerchants, Repository<GiftCard> validGiftCards, Clock clock) {
             this.validUsers = validUsers;
             this.validGiftCards = validGiftCards;
             this.activeSessions = new HashMap<>();
@@ -28,16 +28,16 @@
             this.tokenNum = 0;
         }
 
-        public GiftCardRepository validGiftCards() {
+        public Repository<GiftCard> validGiftCards() {
             return validGiftCards;
         }
 
-        public Map<String, String> validMerchants() {
+        public Repository<Merchant> validMerchants() {
             return validMerchants;
         }
 
         public Integer login(String user, String password) {
-            if (!validUsers.containsKey(user) || !validUsers.get(user).equals(password))
+            if (!validUsers.existsById(user) || !validUsers.findById(user).password().equals(password))
                 throw new RuntimeException(InvalidLoginCredentialsError);
 
             activeSessions.put(++tokenNum, new UserSession(user, clock.now(), clock));
@@ -74,18 +74,17 @@
             giftCard.spend(amount);
             String date = clock.now().toLocalDate().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             String time = clock.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-            String description = String.format("User %s spent %s at merchant %s on %s at %s. Merchant Id: %s", user, amount, validMerchants().get(merchantId), date, time, merchantId);
+            String description = String.format("User %s spent %s at merchant %s on %s at %s. Merchant Id: %s", user, amount, validMerchants().findById(merchantId).merchantName(), date, time, merchantId);
             giftCard.addTransaction(new Transaction(amount, merchantId, clock.now(), description));
 
             return this;
         }
 
         private void validateMerchantAndUserAndGiftCardInformation(String merchantId, String giftCardId, String user) {
-            // Despues estaria bueno hacer el generico de GiftcardRepository
-            if (!validUsers.containsKey(user))
+            if (!validUsers.existsById(user))
                 throw new RuntimeException(InvalidUserNameError);
 
-            if (!validMerchants.containsKey(merchantId))
+            if (!validMerchants.existsById(merchantId))
                 throw new RuntimeException(InvalidMerchantError);
 
             if (!validGiftCards.existsById(giftCardId))
