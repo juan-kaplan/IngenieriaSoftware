@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -68,17 +69,44 @@ public class SystemFacadeTest {
         assertThrowsLike(()-> systemFacade.checkBalance(-1, giftCardId1), SystemFacade.InvalidSessionError);
     }
 
+    @Test
+    public void test10UserSessionBecomesInvalidAfter5minutes(){
+        assertFalse(systemFacadeWithModifiedClock().isTokenValid(getValidToken("John", "Jpass")));
+    }
 
+    @Test
+    public void test11UserCanNotClaimAfter5minutesInactive(){
+        assertThrowsLike(() -> systemFacadeWithModifiedClock()
+                .claimGiftCard(getValidToken("John", "Jpass"), giftCardId1),  SystemFacade.InvalidSessionError);
+    }
 
+    @Test
+    public void test12UserCanNotCheckBalanceAfter5minutesInactive(){
+        assertThrowsLike(() -> systemFacadeWithModifiedClock()
+                .checkBalance(getValidToken("John", "Jpass"), giftCardId1), SystemFacade.InvalidSessionError);
+    }
 
     private SystemFacade systemFacade() {
+        return systemFacadeClockSkeleton(new Clock());
+    }
+
+    private SystemFacade systemFacadeWithModifiedClock() {
+        return systemFacadeClockSkeleton(
+                new Clock() {
+                    public LocalDateTime now() {
+                        return LocalDateTime.now().plusMinutes(6);
+            }
+        });
+    }
+
+    private SystemFacade systemFacadeClockSkeleton(Clock clock) {
         giftCard1 = new GiftCard(100);
         giftCard2 = new GiftCard(250);
 
         return new SystemFacade(Map.of( "John", "Jpass", "Paul", "Ppass" ),
                 Map.of(giftCardId1 , giftCard1, giftCardId2, giftCard2),
                 List.of("Store1", "Store2", "Store3"),
-                new Clock());
+                clock);
     }
 
     private void assertThrowsLike(Executable executable, String message ) {
@@ -88,6 +116,6 @@ public class SystemFacadeTest {
     }
 
     private Integer getValidToken(String user, String password) {
-        return systemFacade.login("John", "Jpass");
+        return systemFacade.login(user, password);
     }
 }

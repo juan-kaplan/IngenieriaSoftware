@@ -22,7 +22,7 @@ public class UserSession {
     }
 
     public boolean isActive() {
-        return 5 * 60 > Duration.between(lastAccessed, LocalDateTime.now()).toSeconds();
+        return 5 * 60 > Duration.between(lastAccessed, clock.now()).toSeconds();
     }
 
     public float checkBalance(GiftCard giftCard) {
