@@ -58,6 +58,11 @@ public class GiftCardTest {
     }
 
     @Test
+    public void test09CannotBeChargedIfCardNotOwnedByCorrectOwner(){
+        assertThrowsLike(() -> newClaimedGiftCardWith100().chargeGiftCard("Fake user", 50, "The Prancing Pony", LocalDateTime.now()), GiftCard.UserDoesNotOwnCardError);
+    }
+
+    @Test
     public void test09TransactionIsAddedAfterCharging(){
         GiftCard giftCard = newClaimedGiftCardWith100();
         giftCard.chargeGiftCard("Jorf", 50, "The Prancing Pony", LocalDateTime.now());

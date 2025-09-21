@@ -52,7 +52,7 @@ public class GiftCard{
     }
 
     public GiftCard chargeGiftCard(String user, float amount, String paymentDescription, LocalDateTime now) {
-        if (Objects.equals(owner(), user))
+        if (!Objects.equals(owner(), user))
             throw new RuntimeException(UserDoesNotOwnCardError);
         if (amount > balance)
             throw new RuntimeException(NotEnoughBalanceError);
