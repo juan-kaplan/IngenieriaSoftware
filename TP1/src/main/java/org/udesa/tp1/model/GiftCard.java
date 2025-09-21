@@ -32,23 +32,16 @@ public class GiftCard{
         return balance;
     }
 
-    public boolean isClaimed() {
-        return isClaimed;
-    }
-
-    public GiftCard addTransaction(float amount, LocalDateTime timestamp, String description) {
-        if (!isClaimed())
-            throw new RuntimeException(GiftCardIsNotClaimedError);
+    private GiftCard addTransaction(float amount, LocalDateTime timestamp, String description) {
         expenses.add(new  Transaction(amount, timestamp, description));
         return this;
     }
 
     public String owner() {
-        if (isClaimed())
-            return owner;
-        throw new  RuntimeException(GiftCardIsNotClaimedError);
+        if (!isClaimed())
+            throw new  RuntimeException(GiftCardIsNotClaimedError);
+        return owner;
     }
-
 
     public GiftCard claimCard(String owner) {
         if  (isClaimed())
@@ -66,6 +59,7 @@ public class GiftCard{
 
         balance -= amount;
         return addTransaction(amount, now, paymentDescription);
-
     }
+
+    public boolean isClaimed() {return isClaimed;}
 }

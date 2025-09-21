@@ -16,6 +16,4 @@ public class GiftCardTest {
                 assertThrows( Exception.class, executable )
                         .getMessage() );
     }
-
-
 }
