@@ -6,22 +6,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class GiftCard implements Identifiable {
+public class GiftCard{
     public static String NotEnoughBalanceError = "Gift Card has not enough balance";
     public static String GiftCardIsClaimedError = "Gift Card is claimed";
     public static String GiftCardIsNotClaimedError = "Operation invalid: Gift Card is not claimed";
     public static String UserDoesNotOwnCardError = "The selected User doesn't own the Card";
 
-
-    private final String giftCardId;
     private float balance;
     private final List<Transaction> expenses;
     private String owner;
     private boolean isClaimed;
 
-    public GiftCard(float balance, String giftCardId) {
+    public GiftCard(float balance) {
         this.balance = balance;
-        this.giftCardId = giftCardId;
         this.expenses = new ArrayList<>();
         this.isClaimed = false;
         this.owner = null;
@@ -29,11 +26,6 @@ public class GiftCard implements Identifiable {
 
     public List<Transaction> expenses() {
         return Collections.unmodifiableList(expenses);
-    }
-
-    @Override
-    public String id() {
-        return giftCardId;
     }
 
     public float balance(){

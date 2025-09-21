@@ -9,17 +9,15 @@
         public static String InvalidSessionError = "Invalid Session";
         public static String InvalidUserNameError = "Invalid User Name";
         public static String InvalidMerchantError = "Invalid Merchant";
-        public static String UserDoesNotOwnCardError = "The selected User doesn't own the Card";
 
-
-        private final Repository<User> validUsers; // username, password
-        private final Repository<Merchant> validMerchants; //Id, name
-        private final Repository<GiftCard> validGiftCards;
-        private final Map<Integer, UserSession> activeSessions; // token, UserSession
+        private Map<String, String> validUsers;
+        private Map<Integer, GiftCard> validGiftCards;
+        private Map<Integer, UserSession> activeSessions;
+        private List<String> validMerchants;
         private int tokenNum;
-        private final Clock clock;
+        private Clock clock;
 
-        public SystemFacade(Repository<User> validUsers, Repository<Merchant> validMerchants, Repository<GiftCard> validGiftCards, Clock clock) {
+        public SystemFacade(Map<String, String> validUsers, Map<Integer, GiftCard> validGiftCards, List<String> validMerchants, Clock clock) {
             this.validUsers = validUsers;
             this.validGiftCards = validGiftCards;
             this.activeSessions = new HashMap<>();
@@ -28,16 +26,8 @@
             this.tokenNum = 0;
         }
 
-        public Repository<GiftCard> validGiftCards() {
-            return validGiftCards;
-        }
-
-        public Repository<Merchant> validMerchants() {
-            return validMerchants;
-        }
-
         public Integer login(String user, String password) {
-            if (!validUsers.existsById(user) || !validUsers.findById(user).password().equals(password))
+            if (!validUsers.containsKey(user) || !validUsers.get(user).equals(password))
                 throw new RuntimeException(InvalidLoginCredentialsError);
 
             activeSessions.put(++tokenNum, new UserSession(user, clock.now(), clock));
@@ -55,48 +45,45 @@
             return false;
         }
 
-        public SystemFacade claimGiftCard(Integer token, String giftCardId) {
+        public SystemFacade claimGiftCard(Integer token, Integer giftCardId) {
             validateTokenAndGiftCardInformation(token, giftCardId);
 
-            activeSessions.get(token).claimGiftCard(validGiftCards.findById(giftCardId));
+            activeSessions.get(token).claimGiftCard(validGiftCards.get(giftCardId));
             return this;
         }
 
-        public float checkGiftCardBalance(Integer token, String giftCardId) {
+        public float checkBalance(Integer token, Integer giftCardId) {
             validateTokenAndGiftCardInformation(token, giftCardId);
 
-            return activeSessions.get(token).checkBalance(validGiftCards.findById(giftCardId));
+            return activeSessions.get(token).checkBalance(validGiftCards.get(giftCardId));
         }
 
-        public SystemFacade chargeUsersGiftCard(String merchantId, String giftCardId, String user, float amount, String payment_description){
-            validateMerchantAndUserAndGiftCardInformation(merchantId, giftCardId, user);
-            validGiftCards.findById(giftCardId).chargeGiftCard(user, amount, payment_description, clock.now());
+        public SystemFacade chargeUsersGiftCard(String merchant, Integer giftCardId, String user, float amount, String payment_description){
+            validateMerchantAndUserAndGiftCardInformation(merchant, giftCardId, user);
+            validGiftCards.get(giftCardId).chargeGiftCard(user, amount, payment_description, clock.now());
 
             return this;
         }
 
-        private void validateMerchantAndUserAndGiftCardInformation(String merchantId, String giftCardId, String user) {
-            if (!validUsers.existsById(user))
+        private void validateMerchantAndUserAndGiftCardInformation(String merchant, Integer giftCardId, String user) {
+            if (!validUsers.containsKey(user))
                 throw new RuntimeException(InvalidUserNameError);
 
-            if (!validMerchants.existsById(merchantId))
+            if (!validMerchants.contains(merchant))
                 throw new RuntimeException(InvalidMerchantError);
 
-            if (!validGiftCards.existsById(giftCardId))
+            if (!validGiftCards.containsKey(giftCardId))
                 throw new RuntimeException(InvalidGiftCardSelectedError);
-
-            if (!(Objects.equals(validGiftCards.findById(giftCardId).owner(), user)))
-                throw new RuntimeException(UserDoesNotOwnCardError);
 
 
         }
 
 
-        private void validateTokenAndGiftCardInformation(Integer token, String giftCardId) {
+        private void validateTokenAndGiftCardInformation(Integer token, Integer giftCardId) {
             if (!isTokenValid(token))
                 throw new RuntimeException(InvalidSessionError);
 
-            if (!validGiftCards.existsById(giftCardId))
+            if (!validGiftCards.containsKey(giftCardId))
                 throw new RuntimeException(InvalidGiftCardSelectedError);
         }
     }
