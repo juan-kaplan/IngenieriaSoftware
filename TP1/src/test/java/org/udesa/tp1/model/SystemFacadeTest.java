@@ -22,7 +22,7 @@ public class SystemFacadeTest {
 
     @Test
     public void test01SystemAcceptsValidUser() {
-        assertTrue(systemFacade.isTokenValid(systemFacade.login("John", "Jpass")));
+        assertTrue(systemFacade.isTokenValid(getValidToken("John", "Jpass")));
     }
 
     @Test
@@ -32,26 +32,44 @@ public class SystemFacadeTest {
 
     @Test
     public void test03ValidUserClaimsValidGiftCard(){
-        systemFacade.claimGiftCard(systemFacade.login("John", "Jpass"), giftCardId1);
+        systemFacade.claimGiftCard(getValidToken("John", "Jpass"), giftCardId1);
         assertEquals("John", giftCard1.owner());
     }
 
     @Test
     public void test04ValidUserClaimsInvalidGiftCard(){
-        assertThrowsLike(()-> systemFacade.claimGiftCard(systemFacade.login("John", "Jpass"), invalidGiftCardId), SystemFacade.InvalidGiftCardSelectedError);
+        assertThrowsLike(()-> systemFacade.claimGiftCard(getValidToken("John", "Jpass" ), invalidGiftCardId), SystemFacade.InvalidGiftCardSelectedError);
     }
 
     @Test
     public void test05ValidUserClaimsAlreadyClaimedGiftCard(){
-        systemFacade.claimGiftCard(systemFacade.login("John", "Jpass"), giftCardId1);
-        assertThrowsLike(()-> systemFacade.claimGiftCard(systemFacade.login("Paul", "Ppass"), giftCardId1), GiftCard.GiftCardIsClaimedError);
+        assertThrowsLike(()-> systemFacade.claimGiftCard(getValidToken("John", "Jpass"), giftCardId1)
+                                            .claimGiftCard(getValidToken("Paul", "Ppass"), giftCardId1), GiftCard.GiftCardIsClaimedError);
     }
 
     @Test
     public void test06ValidUserChecksBalanceOfGiftCard(){
-        Integer token = systemFacade.login("John", "Jpass");
+        Integer token = getValidToken("John", "Jpass");
         assertEquals(100, systemFacade.claimGiftCard(token, giftCardId1).checkBalance(token, giftCardId1));
     }
+    
+    @Test
+    public void test07ValidUserChecksBalanceOfInvalidGiftCard(){
+        assertThrowsLike(()-> systemFacade.checkBalance(getValidToken("John", "Jpass"), invalidGiftCardId), SystemFacade.InvalidGiftCardSelectedError);
+    }
+
+    @Test
+    public void test08InvalidTokenClaimsGiftCard(){
+        assertThrowsLike(()-> systemFacade.claimGiftCard(-1, giftCardId1), SystemFacade.InvalidSessionError);
+    }
+
+    @Test
+    public void test09InvalidTokenChecksBalanceGiftCard(){
+        assertThrowsLike(()-> systemFacade.checkBalance(-1, giftCardId1), SystemFacade.InvalidSessionError);
+    }
+
+
+
 
     private SystemFacade systemFacade() {
         giftCard1 = new GiftCard(100);
@@ -67,5 +85,9 @@ public class SystemFacadeTest {
         assertEquals( message,
                 assertThrows( Exception.class, executable )
                         .getMessage() );
+    }
+
+    private Integer getValidToken(String user, String password) {
+        return systemFacade.login("John", "Jpass");
     }
 }

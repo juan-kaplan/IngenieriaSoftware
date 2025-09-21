@@ -74,8 +74,6 @@
 
             if (!validGiftCards.containsKey(giftCardId))
                 throw new RuntimeException(InvalidGiftCardSelectedError);
-
-
         }
 
 

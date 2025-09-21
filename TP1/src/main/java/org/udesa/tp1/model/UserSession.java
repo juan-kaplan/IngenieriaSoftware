@@ -17,6 +17,7 @@ public class UserSession {
 
     public UserSession claimGiftCard(GiftCard giftCard) {
         giftCard.claimCard(user);
+        lastAccessed = clock.now();
         return this;
     }
 
@@ -25,6 +26,7 @@ public class UserSession {
     }
 
     public float checkBalance(GiftCard giftCard) {
+        lastAccessed = clock.now();
         return giftCard.balance();
     }
 }
