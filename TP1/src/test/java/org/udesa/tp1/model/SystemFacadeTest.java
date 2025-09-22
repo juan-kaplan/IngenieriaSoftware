@@ -123,14 +123,21 @@ public class SystemFacadeTest {
     }
 
     @Test
-    public void test19ValidUserChecksGiftCardExpenses(){
+    public void test19UserCanNotCheckExpensesAfter5minutesInactive() {
+        assertInvalidSession(() -> systemFacadeWithModifiedClock()
+                .checkExpenses(logUserIn("John", "Jpass"), giftCardId1));
+    }
+
+
+    @Test
+    public void test20ValidUserChecksGiftCardExpenses(){
         Integer token = getTokenForFacadeWithClaimedCardId1ByJohn();
         systemFacade.chargeUsersGiftCard("Merchant1", giftCardId1, "John", 50, "Nike");
         assertEquals(1, systemFacade.checkExpenses(token, giftCardId1).size());
     }
 
     @Test
-    public void test20ValidUserChecksExpensesOfInvalidGiftCard(){
+    public void test21ValidUserChecksExpensesOfInvalidGiftCard(){
         assertInvalidGiftCard( () -> systemFacade.checkExpenses(getTokenForFacadeWithClaimedCardId1ByJohn(), invalidGiftCardId));
     }
 
