@@ -2,6 +2,7 @@ package org.udesa.tp1.model;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class UserSession {
     private LocalDateTime lastAccessed;
@@ -28,5 +29,10 @@ public class UserSession {
     public float checkBalance(GiftCard giftCard) {
         lastAccessed = clock.now();
         return giftCard.balance();
+    }
+
+    public List<Transaction> checkExpenses(GiftCard giftCard) {
+        lastAccessed =  clock.now();
+        return giftCard.expenses();
     }
 }

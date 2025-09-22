@@ -13,5 +13,15 @@ public record Transaction(float amount, LocalDateTime timestamp, String descript
         this.description = description;
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Transaction other)) return false;
+        return Float.compare(this.amount, other.amount) == 0
+                && Objects.equals(this.timestamp, other.timestamp)
+                && Objects.equals(this.description, other.description);
+    }
+
+
+
 
 }

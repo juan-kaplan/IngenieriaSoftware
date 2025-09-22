@@ -9,47 +9,45 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GiftCardTest {
-
-    private static GiftCard newClaimedGiftCardWith100() {
-        return new GiftCard(100).claimCard("sarf");
-    }
-    private static GiftCard newUnclaimedGiftCardWith100() {
-        return new GiftCard(100);
-    }
+    String PaymentDescription1 = "The Prancing Pony";
+    LocalDateTime PaymentDate1 = LocalDateTime.now();
+    String Person1 = "sarf";
+    String Person2 = "Jorf";
+    String FakePerson = "Fake user";
 
     @Test
     public void test01NewGiftCardHasNoExpenses() {
-        assertEquals(0, newClaimedGiftCardWith100().expenses().size());
+        assertEquals(0, newClaimedGiftCardWith100BySarf().expenses().size());
     }
 
     @Test
     public void test02GiftCardWithBalanceHasBalance() {
-        assertEquals(100, newClaimedGiftCardWith100().balance() );
+        assertEquals(100, newClaimedGiftCardWith100BySarf().balance() );
     }
 
     @Test
     public void test03GiftCardUpdatesBalanceAfterSpending(){
-        assertEquals(50, newClaimedGiftCardWith100().chargeGiftCard("Jorf", 50, "The Prancing Pony", LocalDateTime.now()).balance());
+        assertEquals(50, chargeClaimedGiftCardWith100BySarf(50).balance());
     }
 
     @Test
     public void test04GiftCardThrowsErrorIfNotEnoughMoney(){
-        assertThrowsLike( () -> newClaimedGiftCardWith100().chargeGiftCard("Jorf", 150, "The Prancing Pony", LocalDateTime.now()), GiftCard.NotEnoughBalanceError);
+        assertThrowsLike( () -> chargeClaimedGiftCardWith100BySarf(150), GiftCard.NotEnoughBalanceError);
     }
 
     @Test
     public void test05GiftCardCanBeClaimedOnce(){
-        assertEquals("sarf", newUnclaimedGiftCardWith100().claimCard("sarf").owner());
+        assertEquals(Person1, newClaimedGiftCardWith100BySarf().owner());
     }
 
     @Test
     public void test06GiftCardCantBeClaimedTwice(){
-        assertThrowsLike( () -> newUnclaimedGiftCardWith100().claimCard("sarf").claimCard("jorf"), GiftCard.GiftCardIsClaimedError);
+        assertThrowsLike( () -> newClaimedGiftCardWith100BySarf().claimCard(Person2), GiftCard.GiftCardIsClaimedError);
     }
 
     @Test
     public void test07GiftCardCannotSpendIfUnclaimed(){
-        assertThrowsLike( () -> newUnclaimedGiftCardWith100().chargeGiftCard("Jorf", 50, "The Prancing Pony", LocalDateTime.now()), GiftCard.GiftCardIsNotClaimedError);
+        assertThrowsLike( () -> newUnclaimedGiftCardWith100().chargeGiftCard(Person2, 50, PaymentDescription1, LocalDateTime.now()), GiftCard.GiftCardIsNotClaimedError);
     }
 
     @Test
@@ -59,27 +57,33 @@ public class GiftCardTest {
 
     @Test
     public void test09CannotBeChargedIfCardNotOwnedByCorrectOwner(){
-        assertThrowsLike(() -> newClaimedGiftCardWith100().chargeGiftCard("Fake user", 50, "The Prancing Pony", LocalDateTime.now()), GiftCard.UserDoesNotOwnCardError);
+        assertThrowsLike(() -> newClaimedGiftCardWith100BySarf().chargeGiftCard(FakePerson, 50, PaymentDescription1, LocalDateTime.now()), GiftCard.UserDoesNotOwnCardError);
     }
 
     @Test
     public void test09TransactionIsAddedAfterCharging(){
-        GiftCard giftCard = newClaimedGiftCardWith100();
-        giftCard.chargeGiftCard("Jorf", 50, "The Prancing Pony", LocalDateTime.now());
-        assertEquals(1, giftCard.expenses().size());
+        assertEquals(1, chargeClaimedGiftCardWith100BySarf(50).expenses().size());
     }
 
     @Test
-    public void test09TransactionHas(){
-        GiftCard giftCard = newClaimedGiftCardWith100();
-        giftCard.chargeGiftCard("Jorf", 50, "The Prancing Pony", LocalDateTime.now());
-        assertEquals(1, giftCard.expenses().size());
+    public void test10TransactionSavesAccurateInformation(){
+        assertEquals(new Transaction(100, PaymentDate1, PaymentDescription1), chargeClaimedGiftCardWith100BySarf(100).expenses().get(0));
     }
 
     private void assertThrowsLike(Executable executable, String message ) {
         assertEquals( message,
                 assertThrows( Exception.class, executable )
                         .getMessage() );
+    }
+
+    private GiftCard newUnclaimedGiftCardWith100() {
+        return new GiftCard(100);
+    }
+    private GiftCard newClaimedGiftCardWith100BySarf() {
+        return newUnclaimedGiftCardWith100().claimCard(Person1);
+    }
+    private GiftCard chargeClaimedGiftCardWith100BySarf(float amount) {
+        return newClaimedGiftCardWith100BySarf().chargeGiftCard(Person1, amount, PaymentDescription1, PaymentDate1);
     }
 
 
