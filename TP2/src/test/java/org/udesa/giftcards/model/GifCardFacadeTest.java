@@ -149,9 +149,8 @@ public class GifCardFacadeTest {
     private static GifCardFacade newFacade() {return newFacade( new Clock() );    }
     private static GifCardFacade newFacade( Clock  clock ) {
         return new GifCardFacade( new ArrayList( List.of( new GiftCard( "GC1", 10 ), new GiftCard( "GC2", 5 ) ) ),
-                                  new HashMap( Map.of( "Bob", "BobPass", "Kevin", "KevPass" ) ),
-                                  new ArrayList<>( List.of( "M1" ) ),
-                                  clock );
+                                  new ArrayList<>( List.of( "M1" ) )
+        );
     }
 
 }

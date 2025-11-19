@@ -9,28 +9,26 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Service
 public class GifCardFacade {
     public static final String InvalidUser = "InvalidUser";
     public static final String InvalidMerchant = "InvalidMerchant";
     public static final String InvalidToken = "InvalidToken";
 
-    private Map<String, String> users;
+    @Autowired private UserService userService;
     private Map<String,GiftCard> cards;
     private List<String>  merchants;
-    private Clock clock;
+    @Autowired private Clock clock;
 
     private Map<UUID, UserSession> sessions = new HashMap();
 
-    public GifCardFacade( List<GiftCard> cards, Map<String, String> users, List<String> merchants, Clock clock ) {
+    public GifCardFacade( List<GiftCard> cards, List<String> merchants) {
         this.cards = cards.stream().collect( Collectors.toMap( each -> each.id(), each -> each ));
-        this.users = users;
         this.merchants = merchants;
-        this.clock = clock;
     }
 
     public UUID login( String userKey, String pass ) {
-        if ( !users.computeIfAbsent( userKey, key -> { throw new RuntimeException( InvalidUser ); } )
-                .equals( pass ) ) {
+        if (!validateLogin( userKey, pass )) {
             throw new RuntimeException( InvalidUser );
         }
 
@@ -66,5 +64,14 @@ public class GifCardFacade {
     private String findUser( UUID token ) {
         return sessions.computeIfAbsent( token, key -> { throw new RuntimeException( InvalidToken ); } )
                        .userAliveAt( clock );
+    }
+
+    private boolean validateLogin(String username, String pass) {
+        UserVault user = userService.findByName(username);
+
+        if (!user.getPassword().equals(pass))
+            throw new RuntimeException( InvalidUser );
+
+        return true;
     }
 }
