@@ -12,11 +12,13 @@ public class UserVault extends ModelEntity {
     @Column private String password;
 
     public UserVault() {
+
     }
 
     public UserVault( String aName, String pass ) {
         name = aName;
         password = pass;
     }
+
 
 }

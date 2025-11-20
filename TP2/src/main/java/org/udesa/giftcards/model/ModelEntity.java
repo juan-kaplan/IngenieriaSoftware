@@ -10,6 +10,7 @@ import lombok.Setter;
 @MappedSuperclass
 @Getter@Setter
 public abstract class ModelEntity {
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     protected Long id;

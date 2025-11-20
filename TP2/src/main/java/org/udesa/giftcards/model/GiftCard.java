@@ -1,27 +1,46 @@
 package org.udesa.giftcards.model;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class GiftCard {
+import static jakarta.persistence.CascadeType.ALL;
+
+@Getter
+@Setter
+@Entity
+public class GiftCard extends ModelEntity {
     public static final String CargoImposible = "CargoImposible";
     public static final String InvalidCard = "InvalidCard";
-    private String id;
-    private int balance;
-    private String owner;
-    private List<String> charges = new ArrayList<>();
 
-    public GiftCard( String id, int initialBalance ) {
-        this.id = id;
-        balance = initialBalance;
+    @Column(nullable = false)
+    private int balance;
+
+    @Column
+    private String owner;
+
+
+    @OneToMany(mappedBy = "giftCard", cascade = ALL, orphanRemoval = true)
+    private List<Charge> charges = new ArrayList<>();
+
+    protected GiftCard() { // NO sabia si poner public o protected
     }
+
+    public GiftCard( String owner, int initialBalance ) {
+        this.balance = initialBalance;
+        this.owner = owner;
+    }
+
+
 
     public GiftCard charge( int anAmount, String description ) {
         if ( !owned() || ( balance - anAmount < 0 ) ) throw new RuntimeException( CargoImposible );
 
-        balance = balance - anAmount;
-        charges.add( description );
-
+        balance -= anAmount;
+        charges.add(new Charge(anAmount, description, this));
         return this;
     }
 
@@ -37,8 +56,10 @@ public class GiftCard {
     public boolean isOwnedBy( String aPossibleOwner ) { return owner.equals( aPossibleOwner );  }
 
     // accessors
-    public String id() {            return id;      }
-    public int balance() {          return balance; }
-    public List<String> charges() { return charges; }
+//    public String id() {            return id;      }
+//    public int balance() {          return balance; }
+    public List<String> charges() { return charges.stream()
+            .map(Charge::getDescription)
+            .collect(Collectors.toList()); }
 
 }
