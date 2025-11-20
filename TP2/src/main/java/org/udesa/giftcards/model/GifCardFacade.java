@@ -17,14 +17,13 @@ public class GifCardFacade {
 
     @Autowired private UserService userService;
     private Map<String,GiftCard> cards;
-    private List<String>  merchants;
+    private MerchantService  merchantService;
     @Autowired private Clock clock;
 
     private Map<UUID, UserSession> sessions = new HashMap();
 
     public GifCardFacade( List<GiftCard> cards, List<String> merchants) {
         this.cards = cards.stream().collect( Collectors.toMap( each -> each.id(), each -> each ));
-        this.merchants = merchants;
     }
 
     public UUID login( String userKey, String pass ) {
@@ -45,10 +44,10 @@ public class GifCardFacade {
         return ownedCard( token, cardId ).balance();
     }
 
-    public void charge( String merchantKey, String cardId, int amount, String description ) {
-        if ( !merchants.contains( merchantKey ) ) throw new RuntimeException( InvalidMerchant );
+    public void charge( String merchantName, String cardId, int amount, String description ) {
+        merchantService.findByName(merchantName);
 
-        cards.get( cardId ).charge( amount, description );
+        cards.get( cardId ).charge( amount, description ); // Esto en realidad esta mal xq deberia hacer una exception. Pero igual lo vamos a temrinar cambiando por un cardservice.
     }
 
     public List<String> details( UUID token, String cardId ) {
