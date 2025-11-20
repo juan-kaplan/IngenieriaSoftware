@@ -29,7 +29,7 @@ public class Charge extends ModelEntity {
 
     public Charge() {
     }
-
+//
     public Charge(int amount, String description, GiftCard giftCard) {
         this.amount = amount;
         this.description = description;
