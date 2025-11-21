@@ -1,5 +1,6 @@
 package org.udesa.giftcards.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.udesa.giftcards.model.GiftCardFacade;
@@ -9,9 +10,9 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-public class GiftCardFacadeController {
+public class GiftCardController {
 
-    GiftCardFacade systemFacade;
+    @Autowired GiftCardFacade systemFacade;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestParam String user, @RequestParam String pass) {

@@ -12,7 +12,6 @@ public class GiftCardService extends ModelService< GiftCard, GiftCardRepository 
         super(repository);
     }
 
-    @Override
     protected void updateData(GiftCard existingObject, GiftCard updatedObject) {
         existingObject.setBalance(updatedObject.getBalance());
         existingObject.setOwner(updatedObject.getOwner());
