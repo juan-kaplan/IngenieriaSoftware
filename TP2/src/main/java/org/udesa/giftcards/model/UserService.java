@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class UserService extends ModelService< UserVault, UserRepository> {
+public class UserService extends ModelService< UserVault, UserRepository > {
 
+    public UserService(UserRepository repository) {
+        super(repository);
+    }
     protected void updateData( UserVault existingObject, UserVault updatedObject ) {
         existingObject.setName( updatedObject.getName() );
         existingObject.setPassword( updatedObject.getPassword() );
@@ -14,6 +17,6 @@ public class UserService extends ModelService< UserVault, UserRepository> {
     @Transactional( readOnly = true )
     public UserVault findByName( String name ) {
         return repository.findByName( name )
-                .orElseThrow( () ->new RuntimeException( GifCardFacade.InvalidUser ));
+                .orElseThrow( () ->new RuntimeException( GiftCardFacade.InvalidUser ));
     }
 }

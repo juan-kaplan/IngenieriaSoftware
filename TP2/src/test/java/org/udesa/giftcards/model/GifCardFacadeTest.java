@@ -4,15 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
-import org.junit.jupiter.api.Test;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+@SpringBootTest
 public class GifCardFacadeTest {
     // Se espera que el usuario pueda inciar sesion con usuario y password y obtener un token
     //    debe poder usar el token para gestionar la tarjeta.
@@ -25,132 +32,161 @@ public class GifCardFacadeTest {
     // los merchants pueden hacer cargos en las tarjetas que hayan sido reclamadas.
     //    los cargos se actualizan en el balance de las tarjetas
 
+    public static Random randomStream = new Random( Instant.now().getEpochSecond() );
+    @Autowired GiftCardFacade systemFacade;
+    @Autowired UserService userService;
+    @Autowired GiftCardService giftCardService;
+    @Autowired MerchantService merchantService;
+    @MockBean Clock clock;
+
+    @BeforeEach public void beforeEach() {
+        when( clock.now() ).then( it -> LocalDateTime.now() );
+    }
+
+    private UserVault savedUser() {
+        return userService.save( new UserVault( "JhonPork" + nextKey(), "Jpass" ) );
+    }
+    private GiftCard savedCard( int balance ) { return giftCardService.save( new GiftCard( "GC" + nextKey(), balance ) ); }
+    private Merchant savedMerchant() { return merchantService.save( new Merchant( "Merchant" + nextKey() ));}
+    private int nextKey() {
+        return randomStream.nextInt();
+    }
 
     @Test public void userCanOpenASession() {
-        assertNotNull( newFacade().login( "Bob", "BobPass" ) );
+        UserVault user = savedUser();
+        assertNotNull( systemFacade.login( user.getName(), user.getPassword() ) );
     }
 
     @Test public void unkownUserCannorOpenASession() {
-        assertThrows( RuntimeException.class, () -> newFacade().login( "Stuart", "StuPass" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.login( "Stuart", "StuPass" ) );
     }
 
     @Test public void userCannotUseAnInvalidtoken() {
-        assertThrows( RuntimeException.class, () -> newFacade().redeem( UUID.randomUUID(), "GC1" ) );
-        assertThrows( RuntimeException.class, () -> newFacade().balance( UUID.randomUUID(), "GC1" ) );
-        assertThrows( RuntimeException.class, () -> newFacade().details( UUID.randomUUID(), "GC1" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.redeem( UUID.randomUUID(), "GC1" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.balance( UUID.randomUUID(), "GC1" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.details( UUID.randomUUID(), "GC1" ) );
     }
 
     @Test public void userCannotCheckOnAlienCard() {
-        GifCardFacade facade = newFacade();
-        UUID token = facade.login( "Bob", "BobPass" );
+        UserVault user = savedUser();
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        assertThrows( RuntimeException.class, () -> facade.balance( token, "GC1" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.balance( token, "GC1" ) );
     }
 
     @Test public void userCanRedeeemACard() {
-        GifCardFacade facade = newFacade();
-        UUID token = facade.login( "Bob", "BobPass" );
+        UserVault user = savedUser();
+        GiftCard card = savedCard( 10 );
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        facade.redeem( token, "GC1" );
-        assertEquals( 10, facade.balance( token, "GC1" ) );
+        systemFacade.redeem( token, card.getCardId() );
+        assertEquals( 10, systemFacade.balance( token, card.getCardId()) );
     }
 
     @Test public void userCanRedeeemASecondCard() {
-        GifCardFacade facade = newFacade();
-        UUID token = facade.login( "Bob", "BobPass" );
+        UserVault user = savedUser();
+        GiftCard card1 = savedCard( 10 );
+        GiftCard card2 = savedCard( 5 );
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        facade.redeem( token, "GC1" );
-        facade.redeem( token, "GC2" );
+        systemFacade.redeem( token, card1.getCardId() );
+        systemFacade.redeem( token, card2.getCardId() );
 
-        assertEquals( 10, facade.balance( token, "GC1" ) );
-        assertEquals( 5, facade.balance( token, "GC2" ) );
+        assertEquals( 10, systemFacade.balance( token, card1.getCardId() ) );
+        assertEquals( 5, systemFacade.balance( token, card2.getCardId() ) );
     }
 
     @Test public void multipleUsersCanRedeeemACard() {
-        GifCardFacade facade = newFacade();
-        UUID bobsToken = facade.login( "Bob", "BobPass" );
-        UUID kevinsToken = facade.login( "Kevin", "KevPass" );
+        UserVault user1 = savedUser();
+        UserVault user2 = savedUser();
+        GiftCard card1 = savedCard( 10 );
+        GiftCard card2 = savedCard( 5 );
+        UUID token1 = systemFacade.login( user1.getName(), user1.getPassword() );
+        UUID token2 = systemFacade.login( user2.getName(), user2.getPassword() );
 
-        facade.redeem( bobsToken, "GC1" );
-        facade.redeem( kevinsToken, "GC2" );
+        systemFacade.redeem( token1, card1.getCardId() );
+        systemFacade.redeem( token2, card2.getCardId() );
 
-        assertEquals( 10, facade.balance( bobsToken, "GC1" ) );
-        assertEquals( 5, facade.balance( kevinsToken, "GC2" ) );
+        assertEquals( 10, systemFacade.balance( token1, card1.getCardId() ) );
+        assertEquals( 5, systemFacade.balance( token2, card2.getCardId() ) );
     }
 
     @Test public void unknownMerchantCantCharge() {
-        assertThrows( RuntimeException.class, () -> newFacade().charge( "Mx", "GC1", 2, "UnCargo" ) );
+        GiftCard card = savedCard( 10 );
+        assertThrows( RuntimeException.class, () -> systemFacade.charge( "Mx", card.getCardId(), 2, "UnCargo" ) );
 
     }
 
     @Test public void merchantCantChargeUnredeemedCard() {
-        assertThrows( RuntimeException.class, () -> newFacade().charge( "M1", "GC1", 2, "UnCargo" ) );
+        Merchant merchant = savedMerchant();
+        GiftCard card = savedCard( 10 );
+        assertThrows( RuntimeException.class, () -> systemFacade.charge( merchant.getName(), card.getCardId(), 2, "UnCargo" ) );
     }
 
     @Test public void merchantCanChargeARedeemedCard() {
-        GifCardFacade facade = newFacade();
-        UUID token = facade.login( "Bob", "BobPass" );
+        UserVault user = savedUser();
+        Merchant merchant = savedMerchant();
+        GiftCard card = savedCard( 10 );
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        facade.redeem( token, "GC1" );
-        facade.charge( "M1", "GC1", 2, "UnCargo" );
+        systemFacade.redeem( token, card.getCardId() );
+        systemFacade.charge( merchant.getName(), card.getCardId(), 2, "UnCargo" );
 
-        assertEquals( 8, facade.balance( token, "GC1" ) );
+        assertEquals( 8, systemFacade.balance( token, card.getCardId() ) );
     }
 
     @Test public void merchantCannotOverchargeACard() {
-        GifCardFacade facade = newFacade();
-        UUID token = facade.login( "Bob", "BobPass" );
+        UserVault user = savedUser();
+        Merchant merchant = savedMerchant();
+        GiftCard card = savedCard( 10 );
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        facade.redeem( token, "GC1" );
-        assertThrows( RuntimeException.class, () -> facade.charge( "M1", "GC1", 11, "UnCargo" ) );
+        systemFacade.redeem( token, card.getCardId() );
+        assertThrows( RuntimeException.class, () -> systemFacade.charge( merchant.getName(), card.getCardId(), 11, "UnCargo" ) );
     }
 
     @Test public void userCanCheckHisEmptyCharges() {
-        GifCardFacade facade = newFacade();
-        UUID token = facade.login( "Bob", "BobPass" );
+        UserVault user = savedUser();
+        GiftCard card = savedCard( 10 );
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        facade.redeem( token, "GC1" );
+        systemFacade.redeem( token, card.getCardId() );
 
-        assertTrue( facade.details( token, "GC1" ).isEmpty() );
+        assertTrue( systemFacade.details( token, card.getCardId() ).isEmpty() );
     }
 
     @Test public void userCanCheckHisCharges() {
-        GifCardFacade facade = newFacade();
-        UUID token = facade.login( "Bob", "BobPass" );
+        UserVault user = savedUser();
+        Merchant merchant = savedMerchant();
+        GiftCard card = savedCard( 10 );
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        facade.redeem( token, "GC1" );
-        facade.charge( "M1", "GC1", 2, "UnCargo" );
+        systemFacade.redeem( token, card.getCardId() );
+        systemFacade.charge( merchant.getName(), card.getCardId(), 2, "UnCargo" );
 
-        assertEquals( "UnCargo", facade.details( token, "GC1" ).getLast() );
+        assertEquals( "UnCargo", systemFacade.details( token, card.getCardId() ).get(
+                systemFacade.details(token, card.getCardId()).size() - 1
+        ));
     }
 
     @Test public void userCannotCheckOthersCharges() {
-        GifCardFacade facade = newFacade();
-        facade.redeem( facade.login( "Bob", "BobPass" ), "GC1" );
+        UserVault user1 = savedUser();
+        UserVault user2 = savedUser();
+        GiftCard card = savedCard( 10 );
+        systemFacade.redeem( systemFacade.login( user1.getName(), user1.getPassword() ), card.getCardId() );
 
-        UUID token = facade.login( "Kevin", "KevPass" );
+        UUID token = systemFacade.login( user2.getName(), user2.getPassword() );
 
-        assertThrows( RuntimeException.class, () -> facade.details( token, "GC1" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.details( token, card.getCardId() ) );
     }
 
     @Test public void tokenExpires() {
-        GifCardFacade facade = newFacade( new Clock( ){
-            Iterator<LocalDateTime> it = List.of( LocalDateTime.now(), LocalDateTime.now().plusMinutes( 16 ) ).iterator();
-            public LocalDateTime now() {
-                return it.next();
-            }
-        } );
+        UserVault user = savedUser();
+        GiftCard card = savedCard( 10 );
+        when (clock.now()).thenReturn(LocalDateTime.now(), LocalDateTime.now().plusMinutes(16));
 
-        UUID token = facade.login( "Kevin", "KevPass" );
+        UUID token = systemFacade.login( user.getName(), user.getPassword() );
 
-        assertThrows( RuntimeException.class, () -> facade.redeem( token, "GC1" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.redeem( token, card.getCardId() ) );
     }
-
-    private static GifCardFacade newFacade() {return newFacade( new Clock() );    }
-    private static GifCardFacade newFacade( Clock  clock ) {
-        return new GifCardFacade( new ArrayList( List.of( new GiftCard( "GC1", 10 ), new GiftCard( "GC2", 5 ) ) ),
-                                  new ArrayList<>( List.of( "M1" ) )
-        );
-    }
-
 }

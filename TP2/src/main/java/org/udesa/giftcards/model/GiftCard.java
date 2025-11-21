@@ -16,25 +16,25 @@ public class GiftCard extends ModelEntity {
     public static final String CargoImposible = "CargoImposible";
     public static final String InvalidCard = "InvalidCard";
 
+    @Column(unique = true)
+    private String cardId;
+
     @Column(nullable = false)
     private int balance;
 
     @Column
     private String owner;
 
-
     @OneToMany(mappedBy = "giftCard", cascade = ALL, orphanRemoval = true)
     private List<Charge> charges = new ArrayList<>();
 
-    protected GiftCard() { // NO sabia si poner public o protected
+    public GiftCard() {
     }
 
-    public GiftCard( String owner, int initialBalance ) {
+    public GiftCard(String cardId, int initialBalance ) {
+        this.cardId = cardId;
         this.balance = initialBalance;
-        this.owner = owner;
     }
-
-
 
     public GiftCard charge( int anAmount, String description ) {
         if ( !owned() || ( balance - anAmount < 0 ) ) throw new RuntimeException( CargoImposible );

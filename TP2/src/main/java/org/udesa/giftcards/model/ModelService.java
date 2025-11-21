@@ -4,11 +4,16 @@ import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 public abstract class ModelService <M extends ModelEntity, R extends JpaRepository<M,Long>> {
     protected R repository;
+
+    protected ModelService(R repository) {
+        this.repository = repository;
+    }
 
     @Transactional(readOnly = true)
     public List<M> findAll() {

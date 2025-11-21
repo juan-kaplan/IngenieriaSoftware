@@ -2,28 +2,28 @@ package org.udesa.giftcards.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
-public class GifCardFacade {
+public class GiftCardFacade {
     public static final String InvalidUser = "InvalidUser";
     public static final String InvalidMerchant = "InvalidMerchant";
     public static final String InvalidToken = "InvalidToken";
+    public static final String InvalidGiftCard = "InvalidGiftCard";
 
     @Autowired private UserService userService;
-    private Map<String,GiftCard> cards;
-    private MerchantService  merchantService;
+    @Autowired private GiftCardService cardService;
+    @Autowired private MerchantService  merchantService;
     @Autowired private Clock clock;
 
     private Map<UUID, UserSession> sessions = new HashMap();
 
-    public GifCardFacade( List<GiftCard> cards, List<String> merchants) {
-        this.cards = cards.stream().collect( Collectors.toMap( each -> each.id(), each -> each ));
+    public GiftCardFacade() {
     }
 
     public UUID login( String userKey, String pass ) {
@@ -37,25 +37,26 @@ public class GifCardFacade {
     }
 
     public void redeem( UUID token, String cardId ) {
-        cards.get( cardId ).redeem( findUser( token ) );
+        cardService.redeem( cardId, findUser( token ) );
     }
 
     public int balance( UUID token, String cardId ) {
-        return ownedCard( token, cardId ).balance();
+        return ownedCard( token, cardId ).getBalance();
     }
 
     public void charge( String merchantName, String cardId, int amount, String description ) {
-        merchantService.findByName(merchantName);
+        validateMerchant( merchantName );
 
-        cards.get( cardId ).charge( amount, description ); // Esto en realidad esta mal xq deberia hacer una exception. Pero igual lo vamos a temrinar cambiando por un cardservice.
+        cardService.charge( cardId, amount, description );
     }
 
+    @Transactional(readOnly = true)
     public List<String> details( UUID token, String cardId ) {
         return ownedCard( token, cardId ).charges();
     }
 
     private GiftCard ownedCard( UUID token, String cardId ) {
-        GiftCard card = cards.get( cardId );
+        GiftCard card = cardService.findByCardId( cardId );
         if ( !card.isOwnedBy( findUser( token ) ) ) throw new RuntimeException( InvalidToken );
         return card;
     }
@@ -71,6 +72,12 @@ public class GifCardFacade {
         if (!user.getPassword().equals(pass))
             throw new RuntimeException( InvalidUser );
 
+        return true;
+    }
+
+    private boolean validateMerchant( String merchantName ) {
+        if (merchantService.findByName(merchantName) == null)
+            throw new RuntimeException( InvalidMerchant );
         return true;
     }
 }

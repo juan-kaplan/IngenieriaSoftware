@@ -2,7 +2,7 @@ package org.udesa.giftcards.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.udesa.giftcards.model.GifCardFacade;
+import org.udesa.giftcards.model.GiftCardFacade;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.UUID;
 @RestController
 public class GiftCardFacadeController {
 
-    GifCardFacade systemFacade;
+    GiftCardFacade systemFacade;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestParam String user, @RequestParam String pass) {
