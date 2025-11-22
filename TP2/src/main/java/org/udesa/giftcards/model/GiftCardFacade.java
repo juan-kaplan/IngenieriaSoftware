@@ -45,7 +45,8 @@ public class GiftCardFacade {
     }
 
     public void charge( String merchantName, String cardId, int amount, String description ) {
-        validateMerchant( merchantName );
+        if (!merchantService.existsByName( merchantName ) )
+            throw new RuntimeException( InvalidMerchant );
 
         cardService.charge( cardId, amount, description );
     }
@@ -72,12 +73,6 @@ public class GiftCardFacade {
         if (!user.getPassword().equals(pass))
             throw new RuntimeException( InvalidUser );
 
-        return true;
-    }
-
-    private boolean validateMerchant( String merchantName ) {
-        if (merchantService.findByName(merchantName) == null)
-            throw new RuntimeException( InvalidMerchant );
         return true;
     }
 }

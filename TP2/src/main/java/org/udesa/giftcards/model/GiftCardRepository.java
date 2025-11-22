@@ -9,7 +9,4 @@ import java.util.Optional;
 
 public interface GiftCardRepository extends JpaRepository<GiftCard, Long> {
     Optional<GiftCard> findByCardId(String cardId);
-
-    @Query("select c from Charge c where c.giftCard.cardId = :cardId")
-    List<Charge> findAllChargesByCardId(@Param("cardId") String cardId);
 }

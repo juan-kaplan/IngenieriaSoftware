@@ -45,7 +45,7 @@ public class GifCardFacadeTest {
     }
 
     private UserVault savedUser() {
-        return userService.save( new UserVault( "JhonPork" + nextKey(), "Jpass" ) );
+        return userService.save( new UserVault( "JohnPork" + nextKey(), "Jpass" ) );
     }
     private GiftCard savedCard( int balance ) { return giftCardService.save( new GiftCard( "GC" + nextKey(), balance ) ); }
     private Merchant savedMerchant() { return merchantService.save( new Merchant( "Merchant" + nextKey() ));}
@@ -108,7 +108,6 @@ public class GifCardFacadeTest {
 
     @Test public void unknownMerchantCantCharge() {
         assertThrows( RuntimeException.class, () -> systemFacade.charge( "Mx", savedCard( 10 ).getCardId(), 2, "UnCargo" ) );
-
     }
 
     @Test public void merchantCantChargeUnredeemedCard() {
@@ -150,14 +149,10 @@ public class GifCardFacadeTest {
         systemFacade.redeem( token, card.getCardId() );
         systemFacade.charge( savedMerchant().getName(), card.getCardId(), 2, "UnCargo" );
 
-        assertEquals( "UnCargo", systemFacade.details( token, card.getCardId() ).get(
-                systemFacade.details(token, card.getCardId()).size() - 1
-        ));
+        assertEquals( "UnCargo", systemFacade.details( token, card.getCardId() ).getLast());
     }
 
     @Test public void userCannotCheckOthersCharges() {
-        UserVault user1 = savedUser();
-        UserVault user2 = savedUser();
         GiftCard card = savedCard( 10 );
         systemFacade.redeem( login( savedUser() ), card.getCardId() );
 

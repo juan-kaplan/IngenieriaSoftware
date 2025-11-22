@@ -40,19 +40,6 @@ public abstract class ModelService <M extends ModelEntity, R extends JpaReposito
         return repository.save( model );
     }
 
-    public M update( Long id, M updatedObject ) {
-        M object = getById( id );
-        updateData( object, updatedObject );
-        return save( object );
-    }
-
-    protected abstract void updateData( M existingObject, M updatedObject) ;
-
-    @Transactional(readOnly = true)
-    public long count() {
-        return repository.count();
-    }
-
     public void delete( long id ) {
         repository.deleteById( id );
     }

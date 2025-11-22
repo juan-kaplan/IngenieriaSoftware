@@ -9,10 +9,6 @@ public class UserService extends ModelService< UserVault, UserRepository > {
     public UserService(UserRepository repository) {
         super(repository);
     }
-    protected void updateData( UserVault existingObject, UserVault updatedObject ) {
-        existingObject.setName( updatedObject.getName() );
-        existingObject.setPassword( updatedObject.getPassword() );
-    }
 
     @Transactional( readOnly = true )
     public UserVault findByName( String name ) {

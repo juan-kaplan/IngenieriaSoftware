@@ -12,12 +12,6 @@ public class GiftCardService extends ModelService< GiftCard, GiftCardRepository 
         super(repository);
     }
 
-    protected void updateData(GiftCard existingObject, GiftCard updatedObject) {
-        existingObject.setBalance(updatedObject.getBalance());
-        existingObject.setOwner(updatedObject.getOwner());
-        existingObject.setCharges(updatedObject.getCharges());
-    }
-
     @Transactional( readOnly = true )
     public GiftCard findByCardId( String cardId ){
         return repository.findByCardId( cardId )
@@ -36,14 +30,13 @@ public class GiftCardService extends ModelService< GiftCard, GiftCardRepository 
         card.charge( amount, description);
     }
 
-    @Transactional( readOnly = true )
-    public List<Charge> findAllChargesByCardId( String cardId ) {
-        return repository.findAllChargesByCardId( cardId );
+    @Transactional(readOnly = true)
+    public int getBalance(String cardId) {
+        return findByCardId(cardId).getBalance();
     }
 
-    //@Transactional(readOnly = true)
-    //public List<Charge> findAllChargesByCardId(String cardId) {
-    //    GiftCard card = findByCardId(cardId); // already throws if not found
-    //    return card.getCharges();             // watch out for lazy loading outside tx
-    //}
+    @Transactional(readOnly = true)
+    public List<String> charges(String cardId) {
+        return findByCardId(cardId).charges();
+    }
 }
