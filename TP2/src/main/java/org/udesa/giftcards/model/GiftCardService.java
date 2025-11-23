@@ -19,6 +19,11 @@ public class GiftCardService extends ModelService< GiftCard, GiftCardRepository 
     }
 
     @Transactional
+    public void deleteByCardIdStartingWith( String prefix ) {
+        repository.deleteByCardIdStartingWith( prefix );
+    }
+
+    @Transactional
     public void redeem(String cardId, String newOwner) {
         GiftCard card = findByCardId(cardId);
         card.redeem(newOwner);
@@ -28,15 +33,5 @@ public class GiftCardService extends ModelService< GiftCard, GiftCardRepository 
     public void charge(String cardId, int amount, String description) {
         GiftCard card = findByCardId(cardId);
         card.charge( amount, description);
-    }
-
-    @Transactional(readOnly = true)
-    public int getBalance(String cardId) {
-        return findByCardId(cardId).getBalance();
-    }
-
-    @Transactional(readOnly = true)
-    public List<String> charges(String cardId) {
-        return findByCardId(cardId).charges();
     }
 }

@@ -1,6 +1,7 @@
 package org.udesa.giftcards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestInstance(Lifecycle.PER_CLASS)
 public class GiftCardControllerTest {
 
     public static Random randomStream = new Random(Instant.now().getEpochSecond());
@@ -45,6 +50,13 @@ public class GiftCardControllerTest {
         when(clock.now()).then(it -> LocalDateTime.now());
     }
 
+    @AfterAll
+    public void cleanDatabase() {
+        userService.deleteByNameStartingWith( "JohnPork" );
+        giftCardService.deleteByCardIdStartingWith( "GC" );
+        merchantService.deleteByNameStartingWith( "Merchant" );
+    }
+
     private int nextKey() {
         return randomStream.nextInt();
     }
@@ -59,121 +71,6 @@ public class GiftCardControllerTest {
 
     private Merchant savedMerchant() {
         return merchantService.save(new Merchant("Merchant" + nextKey()));
-    }
-
-
-    private UUID login(UserVault user) throws Exception {
-        return login(user.getName(), user.getPassword());
-    }
-
-    private UUID login(String userName, String password) throws Exception {
-        return UUID.fromString(
-                new ObjectMapper()
-                        .readTree(
-                                mockMvc.perform(post("/login")
-                                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                                .param("user", userName)
-                                                .param("pass", password))
-                                        .andDo(print())
-                                        .andExpect(status().is(200))
-                                        .andReturn()
-                                        .getResponse()
-                                        .getContentAsString()
-                        )
-                        .get("token")
-                        .asText()
-        );
-    }
-
-    private void redeem(UUID token, String cardId) throws Exception {
-        mockMvc.perform(post("/" + cardId + "/redeem")
-                        .header("Authorization", token.toString()))
-                .andDo(print())
-                .andExpect(status().is(200));
-    }
-
-    private int balance(UUID token, String cardId) throws Exception {
-        return new ObjectMapper()
-                .readTree(
-                        mockMvc.perform(get("/" + cardId + "/balance")
-                                        .header("Authorization", token.toString()))
-                                .andDo(print())
-                                .andExpect(status().is(200))
-                                .andReturn()
-                                .getResponse()
-                                .getContentAsString()
-                )
-                .get("balance")
-                .asInt();
-    }
-
-
-    @SuppressWarnings("unchecked")
-    private List<String> details(UUID token, String cardId) throws Exception {
-        Map<String, Object> response =
-                new ObjectMapper()
-                        .readValue(
-                                mockMvc.perform(get("/" + cardId + "/details")
-                                                .header("Authorization", token.toString()))
-                                        .andDo(print())
-                                        .andExpect(status().is(200))
-                                        .andReturn()
-                                        .getResponse()
-                                        .getContentAsString(),
-                                Map.class
-                        );
-
-        return (List<String>) response.get("details");
-    }
-
-    private void charge(String merchantName, String cardId, int amount, String description) throws Exception {
-        mockMvc.perform(post("/" + cardId + "/charge")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("merchant", merchantName)
-                        .param("amount", Integer.toString(amount))
-                        .param("description", description))
-                .andDo(print())
-                .andExpect(status().is(200));
-    }
-
-    private void loginFailing(String user, String pass) throws Exception {
-        mockMvc.perform(post("/login")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("user", user)
-                        .param("pass", pass))
-                .andDo(print())
-                .andExpect(status().is(500));
-    }
-
-    private void redeemFailing(String token, String cardId) throws Exception {
-        mockMvc.perform(post("/" + cardId + "/redeem")
-                        .header("Authorization", token))
-                .andDo(print())
-                .andExpect(status().is(500));
-    }
-
-    private void balanceFailing(String token, String cardId) throws Exception {
-        mockMvc.perform(get("/" + cardId + "/balance")
-                        .header("Authorization", token))
-                .andDo(print())
-                .andExpect(status().is(500));
-    }
-
-    private void detailsFailing(String token, String cardId) throws Exception {
-        mockMvc.perform(get("/" + cardId + "/details")
-                        .header("Authorization", token))
-                .andDo(print())
-                .andExpect(status().is(500));
-    }
-
-    private void chargeFailing(String merchantName, String cardId, int amount, String description) throws Exception {
-        mockMvc.perform(post("/" + cardId + "/charge")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("merchant", merchantName)
-                        .param("amount", Integer.toString(amount))
-                        .param("description", description))
-                .andDo(print())
-                .andExpect(status().is(500));
     }
 
     @Test
@@ -330,6 +227,120 @@ public class GiftCardControllerTest {
         UUID token = login(savedUser());
         redeem(token, card.getCardId());
         return token;
+    }
+
+    private UUID login(UserVault user) throws Exception {
+        return login(user.getName(), user.getPassword());
+    }
+
+    private UUID login(String userName, String password) throws Exception {
+        return UUID.fromString(
+                new ObjectMapper()
+                        .readTree(
+                                mockMvc.perform(post("/login")
+                                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                                .param("user", userName)
+                                                .param("pass", password))
+                                        .andDo(print())
+                                        .andExpect(status().is(200))
+                                        .andReturn()
+                                        .getResponse()
+                                        .getContentAsString()
+                        )
+                        .get("token")
+                        .asText()
+        );
+    }
+
+    private void redeem(UUID token, String cardId) throws Exception {
+        mockMvc.perform(post("/" + cardId + "/redeem")
+                        .header("Authorization", token.toString()))
+                .andDo(print())
+                .andExpect(status().is(200));
+    }
+
+    private int balance(UUID token, String cardId) throws Exception {
+        return new ObjectMapper()
+                .readTree(
+                        mockMvc.perform(get("/" + cardId + "/balance")
+                                        .header("Authorization", token.toString()))
+                                .andDo(print())
+                                .andExpect(status().is(200))
+                                .andReturn()
+                                .getResponse()
+                                .getContentAsString()
+                )
+                .get("balance")
+                .asInt();
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private List<String> details(UUID token, String cardId) throws Exception {
+        Map<String, Object> response =
+                new ObjectMapper()
+                        .readValue(
+                                mockMvc.perform(get("/" + cardId + "/details")
+                                                .header("Authorization", token.toString()))
+                                        .andDo(print())
+                                        .andExpect(status().is(200))
+                                        .andReturn()
+                                        .getResponse()
+                                        .getContentAsString(),
+                                Map.class
+                        );
+
+        return (List<String>) response.get("details");
+    }
+
+    private void charge(String merchantName, String cardId, int amount, String description) throws Exception {
+        mockMvc.perform(post("/" + cardId + "/charge")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("merchant", merchantName)
+                        .param("amount", Integer.toString(amount))
+                        .param("description", description))
+                .andDo(print())
+                .andExpect(status().is(200));
+    }
+
+    private void loginFailing(String user, String pass) throws Exception {
+        mockMvc.perform(post("/login")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("user", user)
+                        .param("pass", pass))
+                .andDo(print())
+                .andExpect(status().is(500));
+    }
+
+    private void redeemFailing(String token, String cardId) throws Exception {
+        mockMvc.perform(post("/" + cardId + "/redeem")
+                        .header("Authorization", token))
+                .andDo(print())
+                .andExpect(status().is(500));
+    }
+
+    private void balanceFailing(String token, String cardId) throws Exception {
+        mockMvc.perform(get("/" + cardId + "/balance")
+                        .header("Authorization", token))
+                .andDo(print())
+                .andExpect(status().is(500));
+    }
+
+    private void detailsFailing(String token, String cardId) throws Exception {
+        mockMvc.perform(get("/" + cardId + "/details")
+                        .header("Authorization", token))
+                .andDo(print())
+                .andExpect(status().is(500));
+    }
+
+    private void chargeFailing(String merchantName, String cardId, int amount, String description) throws Exception {
+        mockMvc.perform(post("/" + cardId + "/charge")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .param("merchant", merchantName)
+                        .param("amount", Integer.toString(amount))
+                        .param("description", description))
+                .andDo(print())
+                .andExpect(status().is(500));
     }
 
 }

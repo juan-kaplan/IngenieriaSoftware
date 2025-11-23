@@ -15,4 +15,9 @@ public class MerchantService extends ModelService< Merchant, MerchantRepository>
         return repository.existsByName(name);
     }
 
+    @Transactional
+    public void deleteByNameStartingWith( String prefix ) {
+        repository.deleteByNameStartingWith(prefix);
+    }
+
 }

@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest
+@TestInstance(Lifecycle.PER_CLASS)
 public class GiftCardFacadeTest {
     // Se espera que el usuario pueda inciar sesion con usuario y password y obtener un token
     //    debe poder usar el token para gestionar la tarjeta.
@@ -40,6 +44,12 @@ public class GiftCardFacadeTest {
 
     @BeforeEach public void beforeEach() {
         when( clock.now() ).then( it -> LocalDateTime.now() );
+    }
+
+    @AfterAll public void cleanDatabase() {
+        userService.deleteByNameStartingWith( "JohnPork" );
+        giftCardService.deleteByCardIdStartingWith( "GC" );
+        merchantService.deleteByNameStartingWith( "Merchant" );
     }
 
     private UserVault savedUser() {

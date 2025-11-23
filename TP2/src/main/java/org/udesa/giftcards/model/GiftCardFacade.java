@@ -51,7 +51,6 @@ public class GiftCardFacade {
         cardService.charge( cardId, amount, description );
     }
 
-    @Transactional(readOnly = true)
     public List<String> details( UUID token, String cardId ) {
         return ownedCard( token, cardId ).charges();
     }

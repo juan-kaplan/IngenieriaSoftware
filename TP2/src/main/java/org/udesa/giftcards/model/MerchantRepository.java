@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface MerchantRepository extends JpaRepository<Merchant, Long> {
     boolean existsByName(String name);
+    void deleteByNameStartingWith(String prefix);
 }

@@ -15,4 +15,11 @@ public class UserService extends ModelService< UserVault, UserRepository > {
         return repository.findByName( name )
                 .orElseThrow( () ->new RuntimeException( GiftCardFacade.InvalidUser ));
     }
+
+    @Transactional
+    public void deleteByNameStartingWith( String prefix ) {
+        repository.deleteByNameStartingWith( prefix );
+    }
+
+
 }

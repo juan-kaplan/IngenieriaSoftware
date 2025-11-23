@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserVault, Long> {
     Optional<UserVault> findByName(String name );
+    void deleteByNameStartingWith( String prefix );
 }
