@@ -72,19 +72,13 @@ public class GifCardFacadeTest {
     }
 
     @Test public void userCanRedeemACard() {
-        GiftCard card = savedCard( 10 );
-        UUID token = login( savedUser() );
-        systemFacade.redeem( token, card.getCardId() );
-
-        assertEquals( 10, systemFacade.balance( token, card.getCardId()) );
+        assertNewUserCanRedeemOneCard();
     }
 
     @Test public void userCanRedeemASecondCard() {
         GiftCard card1 = savedCard( 10 );
         GiftCard card2 = savedCard( 5 );
-        UUID token = login( savedUser() );
-
-        systemFacade.redeem( token, card1.getCardId() );
+        UUID token = newUserRedeemsCard(card1);
         systemFacade.redeem( token, card2.getCardId() );
 
         assertEquals( 10, systemFacade.balance( token, card1.getCardId() ) );
@@ -93,22 +87,13 @@ public class GifCardFacadeTest {
 
     @Test public void userCannotRedeemRedeemedCard() {
         GiftCard card1 = savedCard( 10 );
-        UUID token = login( savedUser() );
-        systemFacade.redeem( token, card1.getCardId() );
+        UUID token = newUserRedeemsCard(card1);
         assertThrows(RuntimeException.class , () -> systemFacade.redeem( token, card1.getCardId() ));
     }
 
     @Test public void multipleUsersCanRedeemACard() {
-        GiftCard card1 = savedCard( 10 );
-        GiftCard card2 = savedCard( 5 );
-        UUID token1 = login( savedUser() );
-        UUID token2 = login( savedUser() );
-
-        systemFacade.redeem( token1, card1.getCardId() );
-        systemFacade.redeem( token2, card2.getCardId() );
-
-        assertEquals( 10, systemFacade.balance( token1, card1.getCardId() ) );
-        assertEquals( 5, systemFacade.balance( token2, card2.getCardId() ) );
+        assertNewUserCanRedeemOneCard();
+        assertNewUserCanRedeemOneCard();
     }
 
     @Test public void unknownMerchantCantCharge() {
@@ -122,9 +107,7 @@ public class GifCardFacadeTest {
 
     @Test public void merchantCanChargeARedeemedCard() {
         GiftCard card = savedCard( 10 );
-        UUID token = login( savedUser() );
-
-        systemFacade.redeem( token, card.getCardId() );
+        UUID token = newUserRedeemsCard(card);
         systemFacade.charge( savedMerchant().getName(), card.getCardId(), 2, "UnCargo" );
 
         assertEquals( 8, systemFacade.balance( token, card.getCardId() ) );
@@ -132,26 +115,20 @@ public class GifCardFacadeTest {
 
     @Test public void merchantCannotOverchargeACard() {
         GiftCard card = savedCard( 10 );
-        UUID token = login( savedUser() );
-
-        systemFacade.redeem( token, card.getCardId() );
+        newUserRedeemsCard(card);
         assertThrows( RuntimeException.class, () -> systemFacade.charge( savedMerchant().getName(), card.getCardId(), 11, "UnCargo" ) );
     }
 
     @Test public void userCanCheckHisEmptyCharges() {
         GiftCard card = savedCard( 10 );
-        UUID token = login( savedUser() );
-
-        systemFacade.redeem( token, card.getCardId() );
+        UUID token = newUserRedeemsCard(card);
 
         assertTrue( systemFacade.details( token, card.getCardId() ).isEmpty() );
     }
 
     @Test public void userCanCheckHisCharges() {
         GiftCard card = savedCard( 10 );
-        UUID token = login( savedUser() );
-
-        systemFacade.redeem( token, card.getCardId() );
+        UUID token = newUserRedeemsCard(card);
         systemFacade.charge( savedMerchant().getName(), card.getCardId(), 2, "UnCargo" );
 
         assertEquals( "UnCargo", systemFacade.details( token, card.getCardId() ).getLast());
@@ -177,4 +154,18 @@ public class GifCardFacadeTest {
     private UUID login( UserVault user ){
         return systemFacade.login( user.getName(), user.getPassword() );
     }
+
+    private UUID newUserRedeemsCard(GiftCard card) {
+        UUID token = login( savedUser() );
+        systemFacade.redeem( token, card.getCardId() );
+        return token;
+    }
+
+    private void assertNewUserCanRedeemOneCard() {
+        GiftCard card1 = savedCard(10);
+        UUID token1 = login(savedUser());
+        systemFacade.redeem(token1, card1.getCardId());
+        assertEquals(10, systemFacade.balance(token1, card1.getCardId()));
+    }
+
 }
