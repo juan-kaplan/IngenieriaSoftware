@@ -211,7 +211,10 @@ public class GiftCardControllerTest {
 
     @Test
     public void userCanRedeemACard() throws Exception {
-        assertNewUserCanRedeemOneCard();
+        GiftCard card = savedCard(10);
+        UUID token = newUserRedeemsCard(card);
+        assertEquals(10, balance(token, card.getCardId()));
+
     }
 
     @Test
@@ -236,8 +239,13 @@ public class GiftCardControllerTest {
 
     @Test
     public void multipleUsersCanRedeemACard() throws Exception {
-        assertNewUserCanRedeemOneCard();
-        assertNewUserCanRedeemOneCard();
+        GiftCard card1 = savedCard(10);
+        UUID token1 = newUserRedeemsCard(card1);
+        assertEquals(10, balance(token1, card1.getCardId()));
+
+        GiftCard card2 = savedCard(5);
+        UUID token2 = newUserRedeemsCard(card2);
+        assertEquals(5, balance(token2, card2.getCardId()));
     }
 
     @Test
@@ -324,9 +332,4 @@ public class GiftCardControllerTest {
         return token;
     }
 
-    private void assertNewUserCanRedeemOneCard() throws Exception {
-        GiftCard card = savedCard(10);
-        UUID token = newUserRedeemsCard(card);
-        assertEquals(10, balance(token, card.getCardId()));
-    }
 }

@@ -72,7 +72,9 @@ public class GiftCardFacadeTest {
     }
 
     @Test public void userCanRedeemACard() {
-        assertNewUserCanRedeemOneCard();
+        GiftCard card = savedCard(10);
+        UUID token = newUserRedeemsCard(card);
+        assertEquals(10, systemFacade.balance(token, card.getCardId()));
     }
 
     @Test public void userCanRedeemASecondCard() {
@@ -92,8 +94,12 @@ public class GiftCardFacadeTest {
     }
 
     @Test public void multipleUsersCanRedeemACard() {
-        assertNewUserCanRedeemOneCard();
-        assertNewUserCanRedeemOneCard();
+        GiftCard card1 = savedCard(10);
+        UUID token1 = newUserRedeemsCard(card1);
+        assertEquals(10, systemFacade.balance(token1, card1.getCardId()));
+        GiftCard card2 = savedCard(5);
+        UUID token2 = newUserRedeemsCard(card2);
+        assertEquals(5, systemFacade.balance(token2, card2.getCardId()));
     }
 
     @Test public void unknownMerchantCantCharge() {
@@ -159,12 +165,6 @@ public class GiftCardFacadeTest {
         UUID token = login( savedUser() );
         systemFacade.redeem( token, card.getCardId() );
         return token;
-    }
-
-    private void assertNewUserCanRedeemOneCard() {
-        GiftCard card = savedCard(10);
-        UUID token = newUserRedeemsCard(card);
-        assertEquals(10, systemFacade.balance(token, card.getCardId()));
     }
 
 }

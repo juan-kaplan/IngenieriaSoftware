@@ -8,3 +8,4 @@
 ![Logo](https://media.licdn.com/dms/image/v2/D4D03AQEItEPB4IhBVg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1730311375594?e=1765411200&v=beta&t=MG57bMA-e1OORuTifrvQSvnfF7M-uehK6k72od4-YH0)
 ![Logo](https://media.licdn.com/dms/image/v2/D4D03AQG43N9rrTGYcw/profile-displayphoto-shrink_800_800/B4DZXzq_YoGkAc-/0/1743549889753?e=1765411200&v=beta&t=W9ix4RsU9Lkry_bUGIOK63WkUq0v4YCkTlmL4iY-QKc)
 ![Logo](https://media.licdn.com/dms/image/v2/D4D35AQFD5yHw66FXkQ/profile-framedphoto-shrink_800_800/B4DZiHenhhG8Ag-/0/1754619607428?e=1764468000&v=beta&t=m4H5pKeuua6n8vUJYXs0NkncWgCjy-UFmyKmWZJ1Ffs)
+![Logo](https://media.licdn.com/dms/image/v2/D4D03AQGcqT6OsFu6dQ/profile-displayphoto-crop_800_800/B4DZpWrAfXGQAI-/0/1762390706997?e=1765411200&v=beta&t=RN5OTAzojGpT5ZJasgX8i0sVOyb1kXgH5c9KT4n7Gno)
