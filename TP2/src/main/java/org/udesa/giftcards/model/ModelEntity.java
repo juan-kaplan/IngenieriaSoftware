@@ -18,13 +18,6 @@ public abstract class ModelEntity {
     public boolean equals( Object o ) {
         return this == o ||
                 o != null && id != 0 &&
-                        getClass() == o.getClass() && id == getClass().cast( o ).getId() &&
-                        same( o );
+                        getClass() == o.getClass() && id == getClass().cast( o ).getId();
     }
-
-    public int hashCode() {
-        return Long.hashCode( id );
-    }
-
-    protected boolean same( Object o ) { return true; }
 }

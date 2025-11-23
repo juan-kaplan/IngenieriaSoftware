@@ -66,7 +66,6 @@ public class GiftCardFacadeTest {
     }
 
     @Test public void unknownUserCannotOpenASession() {
-
         assertThrows( RuntimeException.class, () -> systemFacade.login( "Stuart", "StuPass" ) );
     }
 
