@@ -182,12 +182,12 @@ public class GiftCardControllerTest {
     }
 
     @Test
-    public void unkownUserCannorOpenASession() throws Exception {
+    public void unknownUserCannotOpenASession() throws Exception {
         loginFailing("Stuart", "StuPass");
     }
 
     @Test
-    public void userCannotUseAnInvalidtoken() throws Exception {
+    public void userCannotUseAnInvalidToken() throws Exception {
         GiftCard card = savedCard(10);
         String randomToken = UUID.randomUUID().toString();
 
@@ -211,21 +211,15 @@ public class GiftCardControllerTest {
 
     @Test
     public void userCanRedeemACard() throws Exception {
-        GiftCard card = savedCard(10);
-        UUID token = login(savedUser());
-
-        redeem(token, card.getCardId());
-
-        assertEquals(10, balance(token, card.getCardId()));
+        assertNewUserCanRedeemOneCard();
     }
 
     @Test
     public void userCanRedeemASecondCard() throws Exception {
         GiftCard card1 = savedCard(10);
         GiftCard card2 = savedCard(5);
-        UUID token = login(savedUser());
+        UUID token = newUserRedeemsCard(card1);
 
-        redeem(token, card1.getCardId());
         redeem(token, card2.getCardId());
 
         assertEquals(10, balance(token, card1.getCardId()));
@@ -235,26 +229,15 @@ public class GiftCardControllerTest {
     @Test
     public void userCannotRedeemRedeemedCard() throws Exception {
         GiftCard card = savedCard(10);
-        UUID token = login(savedUser());
-
-        redeem(token, card.getCardId());
+        UUID token = newUserRedeemsCard(card);
 
         redeemFailing(token.toString(), card.getCardId());
     }
 
     @Test
     public void multipleUsersCanRedeemACard() throws Exception {
-        GiftCard card1 = savedCard(10);
-        GiftCard card2 = savedCard(5);
-
-        UUID token1 = login(savedUser());
-        UUID token2 = login(savedUser());
-
-        redeem(token1, card1.getCardId());
-        redeem(token2, card2.getCardId());
-
-        assertEquals(10, balance(token1, card1.getCardId()));
-        assertEquals(5, balance(token2, card2.getCardId()));
+        assertNewUserCanRedeemOneCard();
+        assertNewUserCanRedeemOneCard();
     }
 
     @Test
@@ -276,9 +259,7 @@ public class GiftCardControllerTest {
     public void merchantCanChargeARedeemedCard() throws Exception {
         GiftCard card = savedCard(10);
         Merchant merchant = savedMerchant();
-        UUID token = login(savedUser());
-
-        redeem(token, card.getCardId());
+        UUID token = newUserRedeemsCard(card);
 
         charge(merchant.getName(), card.getCardId(), 2, "UnCargo");
 
@@ -289,9 +270,7 @@ public class GiftCardControllerTest {
     public void merchantCannotOverchargeACard() throws Exception {
         GiftCard card = savedCard(10);
         Merchant merchant = savedMerchant();
-        UUID token = login(savedUser());
-
-        redeem(token, card.getCardId());
+        newUserRedeemsCard(card);
 
         chargeFailing(merchant.getName(), card.getCardId(), 11, "UnCargo");
     }
@@ -299,9 +278,7 @@ public class GiftCardControllerTest {
     @Test
     public void userCanCheckHisEmptyCharges() throws Exception {
         GiftCard card = savedCard(10);
-        UUID token = login(savedUser());
-
-        redeem(token, card.getCardId());
+        UUID token = newUserRedeemsCard(card);
 
         assertTrue(details(token, card.getCardId()).isEmpty());
     }
@@ -310,9 +287,8 @@ public class GiftCardControllerTest {
     public void userCanCheckHisCharges() throws Exception {
         GiftCard card = savedCard(10);
         Merchant merchant = savedMerchant();
-        UUID token = login(savedUser());
+        UUID token = newUserRedeemsCard(card);
 
-        redeem(token, card.getCardId());
         charge(merchant.getName(), card.getCardId(), 2, "UnCargo");
 
         List<String> d = details(token, card.getCardId());
@@ -341,5 +317,16 @@ public class GiftCardControllerTest {
         UUID token = login(savedUser());
 
         redeemFailing(token.toString(), card.getCardId());
+    }
+    private UUID newUserRedeemsCard(GiftCard card) throws Exception {
+        UUID token = login(savedUser());
+        redeem(token, card.getCardId());
+        return token;
+    }
+
+    private void assertNewUserCanRedeemOneCard() throws Exception {
+        GiftCard card = savedCard(10);
+        UUID token = newUserRedeemsCard(card);
+        assertEquals(10, balance(token, card.getCardId()));
     }
 }

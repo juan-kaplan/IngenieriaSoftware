@@ -18,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest
-public class GifCardFacadeTest {
+public class GiftCardFacadeTest {
     // Se espera que el usuario pueda inciar sesion con usuario y password y obtener un token
     //    debe poder usar el token para gestionar la tarjeta.
     //    el token se vence a los 5'
@@ -55,12 +55,12 @@ public class GifCardFacadeTest {
         assertNotNull( login( savedUser() ));
     }
 
-    @Test public void unkownUserCannorOpenASession() {
+    @Test public void unknownUserCannotOpenASession() {
 
         assertThrows( RuntimeException.class, () -> systemFacade.login( "Stuart", "StuPass" ) );
     }
 
-    @Test public void userCannotUseAnInvalidtoken() {
+    @Test public void userCannotUseAnInvalidToken() {
         assertThrows( RuntimeException.class, () -> systemFacade.redeem( UUID.randomUUID(), "GC1" ) );
         assertThrows( RuntimeException.class, () -> systemFacade.balance( UUID.randomUUID(), "GC1" ) );
         assertThrows( RuntimeException.class, () -> systemFacade.details( UUID.randomUUID(), "GC1" ) );
@@ -162,10 +162,9 @@ public class GifCardFacadeTest {
     }
 
     private void assertNewUserCanRedeemOneCard() {
-        GiftCard card1 = savedCard(10);
-        UUID token1 = login(savedUser());
-        systemFacade.redeem(token1, card1.getCardId());
-        assertEquals(10, systemFacade.balance(token1, card1.getCardId()));
+        GiftCard card = savedCard(10);
+        UUID token = newUserRedeemsCard(card);
+        assertEquals(10, systemFacade.balance(token, card.getCardId()));
     }
 
 }
