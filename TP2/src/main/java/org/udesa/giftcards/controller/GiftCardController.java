@@ -14,6 +14,12 @@ public class GiftCardController {
 
     @Autowired GiftCardFacade systemFacade;
 
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntime(RuntimeException ex) {
+        return ResponseEntity.internalServerError().body(ex.getMessage());
+    }
+
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestParam String user, @RequestParam String pass) {
         Map<String, Object> response = new HashMap<>();

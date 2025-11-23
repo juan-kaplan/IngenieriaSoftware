@@ -12,7 +12,7 @@ import static jakarta.persistence.CascadeType.ALL;
 @Getter
 @Setter
 @Entity
-public class GiftCard extends ModelEntity {
+public class    GiftCard extends ModelEntity {
     public static final String CargoImposible = "CargoImposible";
     public static final String InvalidCard = "InvalidCard";
 

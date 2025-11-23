@@ -8,8 +8,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -58,6 +56,7 @@ public class GifCardFacadeTest {
     }
 
     @Test public void unkownUserCannorOpenASession() {
+
         assertThrows( RuntimeException.class, () -> systemFacade.login( "Stuart", "StuPass" ) );
     }
 
@@ -69,19 +68,18 @@ public class GifCardFacadeTest {
 
     @Test public void userCannotCheckOnAlienCard() {
         UUID token = login( savedUser() );
-
-        assertThrows( RuntimeException.class, () -> systemFacade.balance( token, "GC1" ) );
+        assertThrows( RuntimeException.class, () -> systemFacade.balance( token, savedCard( 10 ).getCardId() ) ); //Lo cambie porque GC1 nunca esta en nuestro db, entonces el check no es lo q dice el test.
     }
 
-    @Test public void userCanRedeeemACard() {
+    @Test public void userCanRedeemACard() {
         GiftCard card = savedCard( 10 );
         UUID token = login( savedUser() );
-
         systemFacade.redeem( token, card.getCardId() );
+
         assertEquals( 10, systemFacade.balance( token, card.getCardId()) );
     }
 
-    @Test public void userCanRedeeemASecondCard() {
+    @Test public void userCanRedeemASecondCard() {
         GiftCard card1 = savedCard( 10 );
         GiftCard card2 = savedCard( 5 );
         UUID token = login( savedUser() );
@@ -93,7 +91,14 @@ public class GifCardFacadeTest {
         assertEquals( 5, systemFacade.balance( token, card2.getCardId() ) );
     }
 
-    @Test public void multipleUsersCanRedeeemACard() {
+    @Test public void userCannotRedeemRedeemedCard() {
+        GiftCard card1 = savedCard( 10 );
+        UUID token = login( savedUser() );
+        systemFacade.redeem( token, card1.getCardId() );
+        assertThrows(RuntimeException.class , () -> systemFacade.redeem( token, card1.getCardId() ));
+    }
+
+    @Test public void multipleUsersCanRedeemACard() {
         GiftCard card1 = savedCard( 10 );
         GiftCard card2 = savedCard( 5 );
         UUID token1 = login( savedUser() );
